@@ -68,7 +68,7 @@ const JobOverview = () => {
           </div>
         </div>
       </section>
-      <section className="flex flex-col gap-8">
+      <section className="flex flex-col gap-10">
         <RoleCards />
         <JobOverviewTabs activeTab={activeTab} setActiveTab={setActiveTab} />
       </section>

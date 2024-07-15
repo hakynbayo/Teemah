@@ -1,6 +1,6 @@
-import { RiMagicLine } from "react-icons/ri";
-import { RiLinkedinBoxFill } from "react-icons/ri";
+import { RiMagicLine, RiLinkedinBoxFill } from "react-icons/ri";
 import { useRef, useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import YesOrNo from "./YesOrNo";
 import RadioButtonOption from "../application/RadioButton";
 
@@ -26,13 +26,29 @@ const radioOptions = [
 const Application = () => {
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
-  const [nameValue, setNameValue] = useState("");
   const [fileUrl, setFileUrl] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const [emailValue, setEmailValue] = useState("");
   const [cvUploaded, setCvUploaded] = useState(false);
   const [compensation, setCompensation] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = (data) => {
+    if (!cvUploaded) {
+      console.log("Please upload your resume.");
+      return; // Stop the function here
+    }
+
+    // Proceed with form submission logic here
+    alert("Form submitted successfully.");
+    console.log(data);
+  };
 
   const handleCompensationChange = (event) => {
     const value = event.target.value;
@@ -66,12 +82,12 @@ const Application = () => {
     const file = event.target.files[0];
     if (file) {
       setCvUploaded(true);
+      const url = URL.createObjectURL(file);
+      setFileUrl(url);
+      setFileName(file.name); // Step 2: Update file name state
     } else {
       setCvUploaded(false);
     }
-    const url = URL.createObjectURL(file);
-    setFileUrl(url);
-    setFileName(file.name); // Step 2: Update file name state
   };
 
   const handleDrop = (event) => {
@@ -81,32 +97,16 @@ const Application = () => {
       const url = URL.createObjectURL(file);
       setFileUrl(url);
       setFileName(file.name); // Step 2: Update file name state
+      setCvUploaded(true);
     }
-  };
-
-  const handleSubmit = (event) => {
-    if (!cvUploaded) {
-      console.log("Please upload your resume.");
-      event.preventDefault(); // Prevent form submission
-      return; // Stop the function here
-    }
-
-    // Proceed with form submission logic here
-    alert("Form submitted successfully.");
   };
 
   const handleDragOver = (event) => {
     event.preventDefault(); // Necessary to allow drop
   };
 
-  const validateEmail = (email) => {
-    const re =
-      /^(([^<>()\\[\]\\.,;:\s@"]+(\.[^<>()\\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
-    return re.test(String(email).toLowerCase());
-  };
-
   return (
-    <div className="w-full flex flex-col gap-16 std">
+    <div className="w-full flex flex-col gap-10 std">
       {/* Auto-fill Resume */}
       <section className="bg-gray flex flex-col gap-4 md:flex-row justify-between items-center p-6 rounded-xl">
         <div className="flex gap-2">
@@ -134,17 +134,35 @@ const Application = () => {
           </button>
         </div>
       </section>
+      {Object.keys(errors).length > 0 && (
+        <section className="bg-[#972828] flex flex-col gap-4 md:flex-row justify-between items-center p-6 rounded-xl">
+          <div className="flex flex-col gap-2">
+            <p>Missing fields</p>
+            <ul className="list-disc px-8">
+              {Object.keys(errors).map((errorKey) => (
+                <li key={errorKey}>
+                  Missing entry for required field:{" "}
+                  <span className="text-white">{errors[errorKey].message}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* Inputfield / Form */}
       <section className="w-full">
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full flex flex-col gap-6"
+        >
           {/* Name */}
           <label
             htmlFor="name"
             className="flex font-bold gap-1 items-center mb-[-12px] text-lg "
           >
             Your Name{" "}
-            <span className={nameValue === "" ? "text-red-500" : "text-white"}>
+            <span className={errors.name ? "text-red-500" : "text-white"}>
               *
             </span>
           </label>
@@ -152,21 +170,21 @@ const Application = () => {
           <input
             type="text"
             id="name"
-            name="name"
             placeholder="Name"
-            required
-            className="w-full border rounded-lg p-4"
-            value={nameValue}
-            onChange={(e) => setNameValue(e.target.value)}
+            className={`w-full border rounded-lg p-4 ${
+              errors.name ? "border-red-500" : ""
+            }`}
+            {...register("name", { required: "Your full name" })}
           />
+          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
-          {/* Eamil */}
+          {/* Email */}
           <label
             htmlFor="email"
             className="flex font-bold gap-1 items-center mb-[-12px] text-lg "
           >
             Your Email Address{" "}
-            <span className={emailValue === "" ? "text-red-500" : "text-white"}>
+            <span className={errors.email ? "text-red-500" : "text-white"}>
               *
             </span>
           </label>
@@ -174,34 +192,34 @@ const Application = () => {
             Kindly enter your personal email
           </p>
           <input
-            type="email" // Change type to email for semantic correctness
+            type="email"
             id="email"
-            name="email"
             placeholder="Email"
-            required
             className={`border rounded-lg p-4 ${
-              !validateEmail(emailValue) && emailValue.length > 0
-                ? "border-red-500"
-                : ""
+              errors.email ? "border-red-500" : ""
             }`}
-            value={emailValue}
-            onChange={(e) => setEmailValue(e.target.value)}
+            {...register("email", {
+              required: "Your email address",
+              pattern: {
+                value:
+                  /^(([^<>()\\[\]\\.,;:\s@"]+(\.[^<>()\\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i,
+                message: "Invalid email address",
+              },
+            })}
           />
+          {errors.email && (
+            <p className="text-red-500">{errors.email.message}</p>
+          )}
 
           {/* Upload Resume */}
           <label
             htmlFor="cvUpload"
             className="flex font-bold gap-1 items-center mt-4 mb-[-12px] text-lg "
           >
-            <label
-              htmlFor="cvUpload"
-              className="flex font-bold gap-1 items-center mt-4 mb-[-12px] text-lg"
-            >
-              Your Resume/CV{" "}
-              <span className={cvUploaded ? "text-white" : "text-red-500"}>
-                *
-              </span>
-            </label>{" "}
+            Your Resume/CV{" "}
+            <span className={cvUploaded ? "text-white" : "text-red-500"}>
+              *
+            </span>
           </label>
           <p className="text-sm text-[#7E7E7E]">
             Please upload your document (preferably a PDF file)
@@ -239,16 +257,15 @@ const Application = () => {
             <input
               type="file"
               ref={fileInputRef}
-              id="cvUpload"
-              name="cvUpload"
               onChange={handleFileChange}
               style={{ display: "none" }}
-              accept=".pdf"
-              required
             />
+            {!cvUploaded && (
+              <p className="text-red-500">Please upload your resume.</p>
+            )}
           </div>
 
-          {/* LinkedIn input */}
+          {/* LinkedIn Profile */}
           <label
             htmlFor="linkedin"
             className="flex font-bold gap-1 items-center mb-[-12px] text-lg "
@@ -266,9 +283,9 @@ const Application = () => {
             <input
               type="text"
               id="linkedin"
-              name="linkedin"
               placeholder="Enter Link here"
               className="pl-10 border rounded-lg p-4"
+              {...register("linkedin")}
             />
           </div>
 
@@ -279,7 +296,7 @@ const Application = () => {
           >
             Your Monthly Compensation Expectation
             <span
-              className={compensation === "" ? "text-red-500" : "text-white"}
+              className={errors.compensation ? "text-red-500" : "text-white"}
             >
               *
             </span>
@@ -290,13 +307,19 @@ const Application = () => {
           <input
             type="text"
             id="compensation"
-            name="compensation"
             placeholder="Start typing"
-            required
-            className="border rounded-lg p-4"
+            className={`border rounded-lg p-4 ${
+              errors.compensation ? "border-red-500" : ""
+            }`}
+            {...register("compensation", {
+              required: "Enter compensation amount",
+            })}
             value={compensation}
             onChange={handleCompensationChange}
           />
+          {errors.compensation && (
+            <p className="text-red-500">{errors.compensation.message}</p>
+          )}
 
           {/* Website, Blog or Portfolio */}
           <label
@@ -311,9 +334,9 @@ const Application = () => {
           <input
             type="text"
             id="portfolio"
-            name="portfolio"
             placeholder="Start typing"
             className="border rounded-lg p-4"
+            {...register("portfolio")}
           />
 
           {/* Language */}
@@ -332,7 +355,7 @@ const Application = () => {
 
           {/* Do you currently work at Zarrtech */}
           <label
-            htmlFor="language"
+            htmlFor="zarrtechCurrent"
             className="flex font-bold gap-1 items-center mb-[-12px] text-lg "
           >
             Do you currently work at Zarrtech
@@ -346,7 +369,7 @@ const Application = () => {
 
           {/* Have you worked at Zarrtech */}
           <label
-            htmlFor="language"
+            htmlFor="zarrtechPast"
             className="flex font-bold gap-1 items-center mb-[-12px] text-lg "
           >
             Have you worked at Zarrtech
@@ -378,14 +401,25 @@ const Application = () => {
             <p className="text-sm text-[#7E7E7E] my-4">
               Kindly enter the country you are legally registered to work in
             </p>
-            <input
-              id="country"
+            <Controller
               name="country"
-              placeholder="Start typing"
-              required
-              className="border rounded-lg p-4 mb-2"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              control={control}
+              rules={{ required: "Enter a country" }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  id="country"
+                  placeholder="Start typing"
+                  className={`border rounded-lg p-4 mb-2 ${
+                    errors.country ? "border-red-500" : ""
+                  }`}
+                  value={inputValue}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                    field.onChange(e);
+                  }}
+                />
+              )}
             />
             {suggestions.length > 0 && (
               <ul className="border border-green bg-gray rounded-lg p-4 my-4">
@@ -403,19 +437,34 @@ const Application = () => {
                 ))}
               </ul>
             )}
+            {errors.country && (
+              <p className="text-red-500">{errors.country.message}</p>
+            )}
           </div>
 
-          {/* notice period */}
+          {/* Notice period */}
           <div className="flex flex-col gap-8">
             <label
-              htmlFor="language"
-              className="flex font-bold gap-1 items-center mb-[-12px] text-lg "
+              htmlFor="noticePeriod"
+              className="flex font-bold gap-1 items-center mb-[-12px] text-lg"
             >
-              What is your notice period to begin working with Zarttech?{" "}
+              What is your notice period to begin working with Zarttech?
             </label>
             <div>
               {radioOptions.map((option) => (
-                <RadioButtonOption key={option.id} {...option} />
+                <Controller
+                  key={option.id}
+                  name="noticePeriod"
+                  control={control}
+                  render={({ field }) => (
+                    <RadioButtonOption
+                      {...option}
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      checked={field.value === option.value}
+                    />
+                  )}
+                />
               ))}
             </div>
           </div>
@@ -428,4 +477,5 @@ const Application = () => {
     </div>
   );
 };
+
 export default Application;

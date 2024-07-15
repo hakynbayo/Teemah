@@ -10,7 +10,7 @@ const JobOverviewTabs = ({ activeTab, setActiveTab }) => {
 
   return (
     <div className="flex items-center justify-center std">
-      <div className="flex flex-col w-full md:w-[65%] gap-16">
+      <div className="flex flex-col w-full md:w-[65%] gap-10">
         <nav className="flex justify-center items-center gap-4">
           <ul className="no-scrollbar bg-gray flex justify-between w-full rounded-full px-2 py-1">
             {ViewTabs.map((item, index) => (

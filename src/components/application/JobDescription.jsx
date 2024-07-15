@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 const JobDescription = ({ setActiveTab }) => {
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-14">
       <section className="flex flex-col gap-8 text-lg">
         <h3 className="font-bold">Who We Are and What We Do</h3>
         <p className="font-medium">
