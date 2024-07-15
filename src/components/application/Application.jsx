@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import YesOrNo from "./YesOrNo";
 import RadioButtonOption from "../application/RadioButton";
 import { useNavigate } from "react-router-dom";
+import { PDFDocument } from "pdf-lib"; // Import PDF parsing library
 
 const countries = [
   "United States",
@@ -38,6 +39,7 @@ const Application = () => {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm();
 
@@ -81,16 +83,51 @@ const Application = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
       setCvUploaded(true);
       const url = URL.createObjectURL(file);
       setFileUrl(url);
-      setFileName(file.name); // Step 2: Update file name state
+      setFileName(file.name); // Update file name state
+
+      // Parse the PDF file
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const text = await extractTextFromPDF(pdfDoc);
+
+      // Parse the extracted text to fill form fields
+      parseCV(text);
     } else {
       setCvUploaded(false);
     }
+  };
+
+  const extractTextFromPDF = async (pdfDoc) => {
+    const pages = pdfDoc.getPages();
+    let text = "";
+    for (const page of pages) {
+      const { textContent } = await page.getTextContent(); // Adjust based on actual PDF parsing method
+      text += textContent.items.map((item) => item.str).join(" ");
+    }
+    return text;
+  };
+
+  const parseCV = (text) => {
+    // Implement your parsing logic here based on the text content
+    // Here is a simple example to set values based on simple matches
+
+    const nameMatch = text.match(/Name:\s*(.*)/);
+    if (nameMatch) setValue("name", nameMatch[1]);
+
+    const emailMatch = text.match(/Email:\s*(.*)/);
+    if (emailMatch) setValue("email", emailMatch[1]);
+
+    const linkedinMatch = text.match(/LinkedIn:\s*(.*)/);
+    if (linkedinMatch) setValue("linkedin", linkedinMatch[1]);
+
+    const compensationMatch = text.match(/Compensation:\s*(.*)/);
+    if (compensationMatch) setValue("compensation", compensationMatch[1]);
   };
 
   const handleDrop = (event) => {
@@ -99,7 +136,7 @@ const Application = () => {
     if (file) {
       const url = URL.createObjectURL(file);
       setFileUrl(url);
-      setFileName(file.name); // Step 2: Update file name state
+      setFileName(file.name); // Update file name state
       setCvUploaded(true);
     }
   };
@@ -179,7 +216,6 @@ const Application = () => {
             }`}
             {...register("name", { required: "Your full name" })}
           />
-          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
           {/* Email */}
           <label
@@ -198,21 +234,17 @@ const Application = () => {
             type="email"
             id="email"
             placeholder="Email"
-            className={`border rounded-lg p-4 ${
+            className={`w-full border rounded-lg p-4 ${
               errors.email ? "border-red-500" : ""
             }`}
             {...register("email", {
               required: "Your email address",
               pattern: {
-                value:
-                  /^(([^<>()\\[\]\\.,;:\s@"]+(\.[^<>()\\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i,
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                 message: "Invalid email address",
               },
             })}
           />
-          {errors.email && (
-            <p className="text-red-500">{errors.email.message}</p>
-          )}
 
           {/* Upload Resume */}
           <label
@@ -311,7 +343,7 @@ const Application = () => {
             type="text"
             id="compensation"
             placeholder="Start typing"
-            className={`border rounded-lg p-4 ${
+            className={`w-full border rounded-lg p-4 ${
               errors.compensation ? "border-red-500" : ""
             }`}
             {...register("compensation", {
@@ -320,9 +352,6 @@ const Application = () => {
             value={compensation}
             onChange={handleCompensationChange}
           />
-          {errors.compensation && (
-            <p className="text-red-500">{errors.compensation.message}</p>
-          )}
 
           {/* Website, Blog or Portfolio */}
           <label
@@ -413,7 +442,7 @@ const Application = () => {
                   {...field}
                   id="country"
                   placeholder="Start typing"
-                  className={`border rounded-lg p-4 mb-2 ${
+                  className={`w-full border rounded-lg p-4 mb-2 ${
                     errors.country ? "border-red-500" : ""
                   }`}
                   value={inputValue}
@@ -439,9 +468,6 @@ const Application = () => {
                   </li>
                 ))}
               </ul>
-            )}
-            {errors.country && (
-              <p className="text-red-500">{errors.country.message}</p>
             )}
           </div>
 

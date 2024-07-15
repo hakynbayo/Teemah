@@ -14,6 +14,10 @@ const JobOverview = () => {
     // Optionally, add feedback to the user (e.g., "Copied!" message)
   };
 
+  const handleGoBack = () => {
+    navigate("/");
+  };
+
   const navigate = useNavigate(); // Initialize useHistory hook
 
   return (
@@ -21,7 +25,7 @@ const JobOverview = () => {
       <div className="w-full md:w-[60%] flex justify-between items-center px-8 lg:px-20">
         <div>
           <button
-            onClick={() => navigate.goBack()}
+            onClick={handleGoBack}
             className="flex items-center space-x-2 "
           >
             <svg
