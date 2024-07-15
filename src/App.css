@@ -1,0 +1,68 @@
+.App {
+  text-align: center;
+  border: 1px solid #ccc;
+  padding: 2rem;
+}
+
+body {
+  margin: 0;
+  place-items: center;
+  background-color: #0e1012;
+  width: 100%;
+  padding: 2rem 0;
+  font-family: "Open Sans", sans-serif;
+}
+
+.gradient {
+  background: linear-gradient(to right, #d54129 20%, #0061ff 68%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* .borders {
+  border: 4px solid; 
+  border-image: linear-gradient(to right, #d54129 20%, #0061ff 68%);
+} */
+
+label {
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+
+.radio-button-large {
+  transform: scale(2.5);
+  border: 2px solid white;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #34a853;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+@font-face {
+  font-family: std;
+  src: url("/circular-std-medium-500.ttf");
+}
+
+.std {
+  font-family: std;
+}
