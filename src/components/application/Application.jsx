@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import YesOrNo from "./YesOrNo";
 import RadioButtonOption from "../application/RadioButton";
+import { useNavigate } from "react-router-dom";
 
 const countries = [
   "United States",
@@ -24,6 +25,7 @@ const radioOptions = [
 ];
 
 const Application = () => {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
   const [fileUrl, setFileUrl] = useState("");
@@ -39,7 +41,7 @@ const Application = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     if (!cvUploaded) {
       console.log("Please upload your resume.");
       return; // Stop the function here
@@ -48,6 +50,7 @@ const Application = () => {
     // Proceed with form submission logic here
     alert("Form submitted successfully.");
     console.log(data);
+    navigate("/success");
   };
 
   const handleCompensationChange = (event) => {
